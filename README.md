@@ -10,7 +10,7 @@ If you make multiple frames you can export them as animation to .mp4 or .gif.
 
 ### 📅 Roadmap
 
- - [ ] Movement and placing
+ - [X] Movement and placing
  - [ ] Adding frames
  - [ ] Exporting script
  - [ ] Adding installation section in README
