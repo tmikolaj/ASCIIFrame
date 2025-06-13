@@ -284,11 +284,11 @@ char Window::changeCharacter() {
 
         if (option == 'a') {
             int ascii;
-            std::cout << "Enter the ASCII code (32-126): ";
+            std::cout << "Enter the ASCII code (33-126): ";
             std::cin >> ascii;
 
-            if (std::cin.fail() || ascii < 32 || ascii > 126) {
-                std::cout << "Invalid ASCII code! Enter a value between 32 and 126!" << '\n';
+            if (std::cin.fail() || ascii < 33 || ascii > 126) {
+                std::cout << "Invalid ASCII code! Enter a value between 33 and 126!" << '\n';
                 std::cin.clear();
                 std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
                 continue;
@@ -300,7 +300,7 @@ char Window::changeCharacter() {
             std::cout << "Enter a printable character: ";
             std::cin >> input;
 
-            if (input < 32 || input > 126) {
+            if (input < 33 || input > 126) {
                 std::cout << "Invalid character! Enter a printable character!" << '\n';
                 continue;
             }
