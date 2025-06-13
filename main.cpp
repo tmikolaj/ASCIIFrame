@@ -1,4 +1,3 @@
-#include <iostream>
 #include "src/Manager.hpp"
 
 int main() {
@@ -11,12 +10,21 @@ int main() {
     std::cin >> option;
 
     if (option == '1') {
+#ifdef _WIN32
+        system("cls");
+#else
+        system("clear");
+#endif
         manager.start();
     } else if (option == '2') {
         exit(0);
     } else {
         std::cout << "Invalid option! Type 1 or 2!" << '\n';
-        manager.clear(); // Clears the screen
+#ifdef _WIN32
+        system("cls");
+#else
+        system("clear");
+#endif
         goto repeat;
     }
 }
