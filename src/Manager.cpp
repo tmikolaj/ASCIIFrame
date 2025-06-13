@@ -19,6 +19,10 @@ void Manager::start() {
         y = 100;
     }
     std::cout << '\n' << "This is how the cursor looks like: @" << '\n';
+    std::cout << "Press 'q' to exit" << '\n';
+    std::cout << "Press any key to continue" << '\n';
+    std::cin.ignore();
+    std::cin.get();
 
     Window window(x, y);
     window.run();
