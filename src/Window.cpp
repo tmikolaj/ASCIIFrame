@@ -7,7 +7,13 @@
     #define USE_NCURSES_DISPLAY
 #endif
 
-Window::Window(int x, int y) : m_x(x), m_y(y), frame(m_y, std::vector<char>(m_x, ' ')) {
+Window::Window(int x, int y, Manager& mgr) :
+m_x(x),
+m_y(y),
+currentFrame(0),
+framesCount(1),
+animation(1, std::vector<std::vector<char>>(m_y, std::vector<char>(m_x, ' '))),
+m_mgr(mgr) {
 
 }
 void Window::run() {
@@ -32,20 +38,29 @@ void Window::runNcurses() {
 
     // Will store the character placed at the position of the cursor cause
     // the cursor will replace it
-    char storedCharacter = frame[current_y][current_x];
-    frame[current_y][current_x] = '@';
+    char storedCharacter = animation[currentFrame][current_y][current_x];
+    animation[currentFrame][current_y][current_x] = '@';
 
     // The character that will be written upon pressing enter
     char selectedChar = ' ';
 
     // flag to know when to place character
     bool place = false;
+    // flag to know when to go to next frame
+    bool nextf = false;
+    // flag to know when to go to next frame
+    bool prevf = false;
 
     int tempX = 0;
     int tempY = 0;
 
+    int colorIndex = 6;
+
     while(true) {
-        display();
+        display(currentFrame);
+        mvprintw(m_y + 2, 0, "Current frame: %d", currentFrame);
+        mvprintw(m_y + 3, 0, "Total frames: %d", framesCount);
+        mvprintw(m_y + 5, 0, "Next frame: n, Previous Frame: p, Play animation: e");
 
         int ch = getch();
 
@@ -98,25 +113,64 @@ void Window::runNcurses() {
             case KEY_ENTER:
                 place = true;
                 break;
+            case 'e':
+                animation[currentFrame][current_y][current_x] = storedCharacter;
+                endwin();
+                m_mgr.playAnimation(animation);
+                initscr();
+                noecho();
+                cbreak();
+                keypad(stdscr, TRUE);
+                nodelay(stdscr, FALSE);
+                refresh();
+                animation[currentFrame][current_y][current_x] = '@';
+                break;
             case 'q':
                 endwin();
                 exit(0);
+            case 'n':
+                if (currentFrame == animation.size() - 1) {
+                    animation[currentFrame][tempY][tempX] = storedCharacter;
+
+                    framesCount++;
+                    animation.push_back(animation[currentFrame]);
+
+                    storedCharacter = animation[currentFrame+1][tempY][tempX];
+                }
+                nextf = true;
+
+                break;
+            case 'p':
+                if (currentFrame != 0) {
+                    prevf = true;
+                }
+                break;
             default:
                 break;
         }
-        frame[tempY][tempX] = storedCharacter;
+        animation[currentFrame][tempY][tempX] = storedCharacter;
 
         if (place) {
-            frame[tempY][tempX] = selectedChar;
+            animation[currentFrame][tempY][tempX] = selectedChar;
             place = false;
         }
 
         tempX = current_x;
         tempY = current_y;
 
-        storedCharacter = frame[current_y][current_x];
+        storedCharacter = animation[currentFrame][current_y][current_x];
 
-        frame[current_y][current_x] = '@';
+        if (nextf) {
+            nextf = false;
+            currentFrame++;
+            storedCharacter = animation[currentFrame][current_y][current_x];
+        } else if (prevf) {
+            currentFrame--;
+            prevf = false;
+        }
+        if (currentFrame < animation.size()) {
+            animation[currentFrame][current_y][current_x] = '@';
+        }
     }
 }
 #endif
@@ -215,7 +269,7 @@ void Window::runConioh() {
     }
 }
 #endif
-void Window::display() {
+void Window::display(int currf) {
 #ifdef USE_NCURSES_DISPLAY
     clear();
 
@@ -240,7 +294,7 @@ void Window::display() {
     for (int i = 0; i < m_y; i++) {
         move(i + 1, 1);
         for (int j = 0; j < m_x; j++) {
-            addch(frame[i][j]);
+            addch(animation[currf][i][j]);
         }
     }
     refresh();
