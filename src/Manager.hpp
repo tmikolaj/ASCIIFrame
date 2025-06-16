@@ -2,11 +2,18 @@
 #define MENU_HPP
 
 #include <iostream>
-#include "Window.hpp"
+#include <utility>
+#include <vector>
 
 class Manager {
+private:
+    int fps;
 public:
-    void start();
+    Manager();
+    ~Manager() = default;
+    std::pair<int, int> start();
+    bool menu();
+    void playAnimation(const std::vector<std::vector<std::vector<char>>>& a);
 };
 
 #endif //MENU_HPP
