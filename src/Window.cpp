@@ -50,17 +50,25 @@ void Window::runNcurses() {
     bool nextf = false;
     // flag to know when to go to next frame
     bool prevf = false;
+    // flag to delete character
+    bool del = false;
 
     int tempX = 0;
     int tempY = 0;
 
-    int colorIndex = 6;
-
     while(true) {
         display(currentFrame);
-        mvprintw(m_y + 2, 0, "Current frame: %d", currentFrame);
+        mvprintw(m_y + 2, 0, "Current frame: %d", currentFrame+1);
         mvprintw(m_y + 3, 0, "Total frames: %d", framesCount);
-        mvprintw(m_y + 5, 0, "Next frame: n, Previous Frame: p, Play animation: e");
+        mvprintw(m_y + 4, 0, "Current selected character: %c", selectedChar);
+        mvprintw(m_y + 5, 0, "CONTROLS:");
+        mvprintw(m_y + 6, 0, " - Move: wsad or arrow keys");
+        mvprintw(m_y + 7, 0, " - Change Character: tab");
+        mvprintw(m_y + 8, 0, " - Place Character: enter");
+        mvprintw(m_y + 9, 0, " - Delete Character: backspace");
+        mvprintw(m_y + 10, 0, " - New Frame: n");
+        mvprintw(m_y + 11, 0, " - Previous Frame: p");
+        mvprintw(m_y + 12, 0, " - Play animation: e");
 
         int ch = getch();
 
@@ -127,7 +135,16 @@ void Window::runNcurses() {
                 break;
             case 'q':
                 endwin();
-                exit(0);
+                animation[currentFrame][current_y][current_x] = storedCharacter;
+                m_mgr.menu(animation);
+                initscr();
+                noecho();
+                cbreak();
+                keypad(stdscr, TRUE);
+                nodelay(stdscr, FALSE);
+                refresh();
+                animation[currentFrame][current_y][current_x] = '@';
+                break;
             case 'n':
                 if (currentFrame == animation.size() - 1) {
                     animation[currentFrame][tempY][tempX] = storedCharacter;
@@ -145,9 +162,18 @@ void Window::runNcurses() {
                     prevf = true;
                 }
                 break;
+            case KEY_BACKSPACE:
+                del = true;
+                break;
             default:
                 break;
         }
+        if (del) {
+            animation[currentFrame][current_y][current_x] = ' ';
+            storedCharacter = ' ';
+            del = false;
+        }
+
         animation[currentFrame][tempY][tempX] = storedCharacter;
 
         if (place) {
@@ -181,19 +207,32 @@ void Window::runConioh() {
 
     // Will store the character placed at the position of the cursor cause
     // the cursor will replace it
-    char storedCharacter = frame[current_y][current_x];
-    frame[current_y][current_x] = '@';
+    char storedCharacter = animation[currentFrame][current_y][current_x];
+    animation[currentFrame][current_y][current_x] = '@';
 
     // The character that will be written upon pressing enter
     char selectedChar = ' ';
 
     // flag to know when to place character
     bool place = false;
+    // flag to know when to go to next frame
+    bool nextf = false;
+    // flag to know when to go to next frame
+    bool prevf = false;
+    // flag to delete character
+    bool del = false;
 
     int tempX = 0;
     int tempY = 0;
 
     while (true) {
+        display(currentFrame);
+        std::cout << "Current frame: " << currentFrame+1 << '\n';
+        std::cout << "Total frames: " << framesCount << '\n';
+        std::cout << "Current selected character:" << selectedCharacter << '\n';
+        std::cout << "CONTROLS: \n - Move: wsad or arrow keys\n - Change Character: tab\n - Place Character: enter" << '\n';
+        std::cout << " - Delete Character: backspace\n - Next frame: n\n - Previous Frame: p\n - Play animation: e" << '\n';
+        std::cout << " - Menu: q" << '\n';
         int ch = _getch();
 
         // Arrow keys input
@@ -249,23 +288,67 @@ void Window::runConioh() {
                 case 13:
                     place = true;
                     break;
+                case 'e':
+                    animation[currentFrame][current_y][current_x] = storedCharacter;
+                    m_mgr.playAnimation(animation);
+                    animation[currentFrame][current_y][current_x] = '@';
+                    break;
                 case 'q':
-                    exit(0);
+                    animation[currentFrame][current_y][current_x] = storedCharacter;
+                    m_mgr.menu(animation);
+                    animation[currentFrame][current_y][current_x] = '@';
+                    break;
+                case 'n':
+                    if (currentFrame == animation.size() - 1) {
+                        animation[currentFrame][tempY][tempX] = storedCharacter;
+
+                        framesCount++;
+                        animation.push_back(animation[currentFrame]);
+
+                        storedCharacter = animation[currentFrame + 1][tempY][tempX];
+                    }
+                    nextf = true;
+
+                    break;
+                case 'p':
+                    if (currentFrame != 0) {
+                        prevf = true;
+                    }
+                    break;
+                case 8:
+                    del = true;
+                    break;
             }
         }
-        frame[tempY][tempX] = storedCharacter;
+        if (del) {
+            animation[currentFrame][current_y][current_x] = ' ';
+            storedCharacter = ' ';
+            del = false;
+        }
+        animation[currentFrame][tempY][tempX] = storedCharacter;
 
         if (place) {
-            frame[tempY][tempX] = selectedChar;
+            animation[currentFrame][tempY][tempX] = selectedChar;
             place = false;
         }
 
         tempX = current_x;
         tempY = current_y;
 
-        storedCharacter = frame[current_y][current_x];
+        storedCharacter = animation[currentFrame][current_y][current_x];
 
-        frame[current_y][current_x] = '@';
+        if (nextf) {
+            nextf = false;
+            currentFrame++;
+            storedCharacter = animation[currentFrame][current_y][current_x];
+        }
+        else if (prevf) {
+            currentFrame--;
+            prevf = false;
+        }
+        if (currentFrame < animation.size()) {
+            animation[currentFrame][current_y][current_x] = '@';
+        }
     }
 }
 #endif
@@ -310,7 +393,7 @@ void Window::display(int currf) {
     for (int i = 0; i < m_y; i++) {
         std::cout << '|';
         for (int j = 0; j < m_x; j++) {
-            std::cout << frame[i][j];
+            std::cout << animation[currf][i][j];
         }
         std::cout << '|' << '\n';
     }
