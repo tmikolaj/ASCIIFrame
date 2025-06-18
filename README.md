@@ -14,3 +14,8 @@ git clone https://github.com/tmikolaj/ASCIIFrame
 ```
 2. Open it in your IDE
 3. Build and run it
+
+### 🧐 Demo
+
+Just a simple animation I made that draws a house
+![ASCIIFrame demo video](readme-assets/asciiframe.gif)
