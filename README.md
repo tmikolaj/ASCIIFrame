@@ -1,16 +1,16 @@
 # ASCIIFrame
 
-## 🚧 Project is still being made
-
 ## 🤔 What is it?
 
-A CLI project that lets you create animations. How does it work then?
+A TUI project that lets you create animations. How does it work then?
 You move across the frame (you can set the size) and select an ASCII character.
-If you make multiple frames you can export them as animation to .mp4 or .gif.
+You can play the animations you make in the program.
 
-### 📅 Roadmap
+## 🚀 Installation
 
- - [X] Movement and placing
- - [X] Adding frames (not on windows currently)
- - [ ] Exporting script
- - [ ] Adding installation section in README
+1. Run this command
+```bash
+git clone https://github.com/tmikolaj/ASCIIFrame
+```
+2. Open it in your IDE
+3. Build and run it
